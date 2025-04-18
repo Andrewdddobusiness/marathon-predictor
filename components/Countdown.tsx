@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 
 interface CountdownProps {
-  marathonDate: string; // e.g. "2025-09-14"
+  days?: number;
+  marathonDate?: string; // e.g. "2025-09-14"
 }
 
 function getTimeLeft(dateStr: string) {
@@ -20,10 +21,12 @@ function getTimeLeft(dateStr: string) {
   return `${days}d ${hours}h ${minutes}m`;
 }
 
-export default function Countdown({ marathonDate }: CountdownProps) {
-  const [timeLeft, setTimeLeft] = useState(getTimeLeft(marathonDate));
+export default function Countdown({ days, marathonDate }: CountdownProps) {
+  const [timeLeft, setTimeLeft] = useState(marathonDate ? getTimeLeft(marathonDate) : `${days}d`);
 
   useEffect(() => {
+    if (!marathonDate) return;
+
     const interval = setInterval(() => {
       setTimeLeft(getTimeLeft(marathonDate));
     }, 60000); // update every minute

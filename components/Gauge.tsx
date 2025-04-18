@@ -3,17 +3,18 @@
 import { useEffect, useState } from "react";
 
 interface GaugeProps {
-  currentTime: number; // in minutes, e.g. 270 for 4.5 hours
-  goalTime: number; // in minutes
+  value: number;
+  max: number;
+  label: string;
 }
 
-export default function Gauge({ currentTime, goalTime }: GaugeProps) {
+export default function Gauge({ value, max, label }: GaugeProps) {
   const [angle, setAngle] = useState(0);
 
   useEffect(() => {
-    const percentage = Math.min(currentTime / goalTime, 1);
+    const percentage = Math.min(value / max, 1);
     setAngle(percentage * 180); // Half-circle gauge
-  }, [currentTime, goalTime]);
+  }, [value, max]);
 
   return (
     <div className="w-48 h-24 relative">
@@ -29,8 +30,8 @@ export default function Gauge({ currentTime, goalTime }: GaugeProps) {
           strokeLinecap="round"
         />
       </svg>
-      <div className="absolute top-12 left-1/2 transform -translate-x-1/2 text-center font-semibold">
-        Predicted: {(currentTime / 60).toFixed(2)}h
+      <div className="absolute top-12 left-1/2 transform -translate-x-1/2 text-center font-semibold text-sm">
+        {value.toFixed(1)} {label}
       </div>
     </div>
   );
