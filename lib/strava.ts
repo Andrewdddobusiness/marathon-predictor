@@ -1,4 +1,6 @@
 "use server";
+
+import axios from "axios";
 import { Configuration, ActivitiesApi, SummaryActivity } from "@/libs/strava_api_v3";
 
 export interface StravaActivity {
@@ -12,28 +14,50 @@ export interface StravaActivity {
 }
 
 function checkEnvVars() {
-  if (!process.env.STRAVA_ACCESS_TOKEN) {
-    throw new Error("Missing STRAVA_ACCESS_TOKEN in environment variables");
+  const required = ["STRAVA_CLIENT_ID", "STRAVA_CLIENT_SECRET", "STRAVA_REFRESH_TOKEN"];
+  for (const key of required) {
+    if (!process.env[key]) {
+      throw new Error(`Missing required env var: ${key}`);
+    }
   }
+}
+
+async function getAccessToken(): Promise<string> {
+  checkEnvVars();
+
+  const res = await axios.post("https://www.strava.com/oauth/token", {
+    client_id: process.env.STRAVA_CLIENT_ID,
+    client_secret: process.env.STRAVA_CLIENT_SECRET,
+    refresh_token: process.env.STRAVA_REFRESH_TOKEN,
+    grant_type: "refresh_token",
+  });
+
+  const { access_token, refresh_token, expires_at } = res.data;
+
+  // console.log("✅ Refreshed access token:", access_token);
+  // Optionally persist new `refresh_token` and `expires_at` if needed
+
+  return access_token;
 }
 
 export async function getWeeklyRuns(): Promise<StravaActivity[]> {
   try {
-    checkEnvVars();
-    const access_token = process.env.STRAVA_ACCESS_TOKEN!;
-    const aprilFirst2025 = Math.floor(new Date("2025-04-07").getTime() / 1000);
+    const access_token = await getAccessToken();
+
+    const afterTimestamp = Math.floor(new Date("2025-04-07").getTime() / 1000);
 
     const config = new Configuration({
       accessToken: access_token,
       basePath: "https://www.strava.com/api/v3",
     });
+
     const activitiesApi = new ActivitiesApi(config);
 
     const response = await activitiesApi.getLoggedInAthleteActivities(
       undefined, // before
-      aprilFirst2025, // after
+      afterTimestamp, // after
       1, // page
-      200 // perPage - increased to get more activities
+      200 // perPage
     );
 
     return response.data
@@ -48,7 +72,7 @@ export async function getWeeklyRuns(): Promise<StravaActivity[]> {
         total_elevation_gain: activity.total_elevation_gain!,
       }));
   } catch (err: unknown) {
-    console.error("Error fetching Strava activities:", err instanceof Error ? err.message : "Unknown error");
+    console.error("❌ Error fetching Strava activities:", err instanceof Error ? err.message : err);
     throw err;
   }
 }

@@ -7,8 +7,10 @@ import Countdown from "@/components/Countdown";
 import Gauge from "@/components/Gauge";
 import { PredictionChart } from "@/components/PredictionChart";
 import RecentRuns from "@/components/RecentRuns";
+import RunnerAvatar from "@/components/RunnerAvatar";
 import { StravaActivity } from "@/lib/strava";
 import { getWeeklyRuns } from "@/lib/strava";
+import StatsOverlay from "@/components/StatsOverlay";
 
 interface Prediction {
   predictedTime: string;
@@ -54,65 +56,99 @@ export default function HomePage() {
     }
   };
 
+  // Calculate level based on training volume (example calculation)
+  const level = Math.floor((prediction?.trainingVolume || 0) / 5) + 1;
+  const xpProgress = (((prediction?.trainingVolume || 0) % 5) / 5) * 100;
+
   return (
-    <main className="min-h-screen bg-gray-50 text-gray-900 py-10 px-4 md:px-10">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-4xl font-bold tracking-tight">🏃‍♂️ Marathon Predictor</h1>
-        <button
-          onClick={handleGeneratePrediction}
-          disabled={isLoading}
-          className="px-6 py-2 bg-blue-600 text-white hover:bg-blue-700 disabled:bg-blue-300 rounded-lg shadow transition"
-        >
-          {isLoading ? "Generating..." : "Generate Prediction"}
-        </button>
-      </div>
+    <main className="min-h-screen bg-gradient-to-br from-white via-white to-blue-50 py-10 px-4 md:px-10">
+      <div className="max-w-6xl mx-auto relative">
+        {/* Background gradient orbs */}
+        <div className="absolute -top-40 -left-40 w-80 h-80 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
+        <div className="absolute -bottom-40 left-20 w-80 h-80 bg-pink-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-4000"></div>
 
-      {prediction ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Left Column */}
-          <div className="space-y-6">
-            {/* Predicted Time */}
-            <div className="p-6 rounded-xl shadow bg-white border border-gray-200">
-              <h2 className="text-xl font-semibold mb-2 text-gray-700">⏱ Predicted Finish Time</h2>
-              <p className="text-5xl font-bold mb-4 text-yellow-500">{prediction.predictedTime} hrs</p>
-              <ConfidenceBar confidence={prediction.confidence} />
+        <div className="relative">
+          <div className="flex justify-between items-center mb-8">
+            <div>
+              <h1 className="text-4xl font-bold tracking-tight text-gray-900">🏃‍♂️ Marathon Journey</h1>
+              <p className="text-gray-600 mt-2">Track your progress, level up your running</p>
             </div>
+            <button
+              onClick={handleGeneratePrediction}
+              disabled={isLoading}
+              className="px-6 py-3 bg-white/40 backdrop-blur-lg text-gray-900 hover:bg-white/60 disabled:bg-white/30 rounded-xl shadow-lg transition-all border border-white/50"
+            >
+              {isLoading ? "Analyzing..." : "Generate Prediction"}
+            </button>
+          </div>
 
-            {/* Days Until Race */}
-            <div className="p-6 rounded-xl shadow bg-white border border-gray-200">
-              <h2 className="text-xl font-semibold mb-2 text-gray-700">📆 Days Until Race</h2>
-              <Countdown days={prediction.daysUntilRace} />
+          {/* 3D Runner Avatar */}
+          <div className="grid grid-cols-3 mt-8 p-6 mb-8">
+            <div>
+              <StatsOverlay activities={runs} />
+            </div>
+            <div className="col-span-2">
+              <RunnerAvatar activities={runs} />
             </div>
           </div>
 
-          {/* Right Column */}
-          <div className="space-y-6">
-            {/* Training Progress */}
-            <div className="p-6 rounded-xl shadow bg-white border border-gray-200">
-              <h2 className="text-xl font-semibold mb-4 text-gray-700">📈 Training Progress</h2>
-              <Gauge value={prediction.trainingVolume} max={42.2} label="Training Volume (km)" />
-            </div>
-
-            {/* Performance Metrics */}
-            <div className="p-6 rounded-xl shadow bg-white border border-gray-200">
-              <h2 className="text-xl font-semibold mb-4 text-gray-700">🔍 Performance Metrics</h2>
-              <div className="mt-4">
-                <PredictionChart
-                  averagePace={prediction.averagePace}
-                  longestRun={prediction.longestRun}
-                  confidenceLevel={prediction.confidenceLevel}
-                />
+          {prediction ? (
+            <>
+              {/* Level and XP Bar */}
+              <div className="p-6 rounded-xl backdrop-blur-lg bg-white/40 border border-white/50 shadow-lg mb-8">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="bg-blue-500 text-white rounded-lg px-3 py-1 font-bold">Lv.{level}</div>
+                  <div className="flex-1 bg-white/40 rounded-full h-4">
+                    <div
+                      className="bg-blue-500 rounded-full h-4 transition-all duration-500"
+                      style={{ width: `${xpProgress}%` }}
+                    />
+                  </div>
+                  <div className="text-sm text-gray-700">{xpProgress.toFixed(1)}%</div>
+                </div>
+                <p className="text-sm text-gray-600">Keep running to level up!</p>
               </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* Stats Cards */}
+                <div className="space-y-6">
+                  <div className="p-6 rounded-xl backdrop-blur-lg bg-white/40 border border-white/50 shadow-lg">
+                    <h2 className="text-xl font-semibold mb-4 text-gray-900">⏱ Target Time</h2>
+                    <p className="text-6xl font-bold text-blue-500 mb-4">{prediction.predictedTime}</p>
+                    <ConfidenceBar confidence={prediction.confidence} />
+                  </div>
+
+                  <div className="p-6 rounded-xl backdrop-blur-lg bg-white/40 border border-white/50 shadow-lg">
+                    <h2 className="text-xl font-semibold mb-4 text-gray-900">📆 Upcoming Races</h2>
+                    <Countdown />
+                  </div>
+                </div>
+
+                <div className="space-y-6">
+                  <div className="p-6 rounded-xl backdrop-blur-lg bg-white/40 border border-white/50 shadow-lg">
+                    <h2 className="text-xl font-semibold mb-4 text-gray-900">🔍 Performance Stats</h2>
+                    <PredictionChart
+                      averagePace={prediction.averagePace}
+                      longestRun={prediction.longestRun}
+                      confidenceLevel={prediction.confidenceLevel}
+                    />
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="p-8 rounded-xl backdrop-blur-lg bg-white/40 border border-white/50 shadow-lg text-center">
+              <h2 className="text-2xl font-medium text-gray-900">Generate a prediction to start your journey!</h2>
             </div>
+          )}
+
+          {/* Recent Runs Section */}
+          <div className="mt-8">
+            <RecentRuns runs={runs} isLoading={isLoadingRuns} />
           </div>
         </div>
-      ) : (
-        <div className="text-center mt-20 bg-white p-8 rounded-xl shadow-md border border-gray-200">
-          <h2 className="text-2xl text-gray-600 font-medium">Click the button above to generate your prediction</h2>
-        </div>
-      )}
-
-      <RecentRuns runs={runs} isLoading={isLoadingRuns} />
+      </div>
     </main>
   );
 }

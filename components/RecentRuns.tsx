@@ -10,50 +10,54 @@ interface RecentRunsProps {
 export default function RecentRuns({ runs, isLoading }: RecentRunsProps) {
   if (isLoading) {
     return (
-      <div className="mt-8 p-6 rounded-xl shadow bg-white border border-gray-200">
-        <h2 className="text-xl font-semibold mb-4 text-gray-700">📊 Recent Runs</h2>
-        <div className="text-center py-8 text-gray-500">Loading your runs...</div>
+      <div className="p-6 rounded-xl backdrop-blur-lg bg-white/40 border border-white/50 shadow-lg">
+        <h2 className="text-xl font-semibold mb-4 text-gray-900">📊 Activity Log</h2>
+        <div className="text-center py-8 text-gray-600">Loading your runs...</div>
       </div>
     );
   }
 
   if (!runs?.length) {
     return (
-      <div className="mt-8 p-6 rounded-xl shadow bg-white border border-gray-200">
-        <h2 className="text-xl font-semibold mb-4 text-gray-700">📊 Recent Runs</h2>
-        <div className="text-center py-8 text-gray-500">No recent runs found</div>
+      <div className="p-6 rounded-xl backdrop-blur-lg bg-white/40 border border-white/50 shadow-lg">
+        <h2 className="text-xl font-semibold mb-4 text-gray-900">📊 Activity Log</h2>
+        <div className="text-center py-8 text-gray-600">No recent runs found</div>
       </div>
     );
   }
 
   return (
-    <div className="mt-8 p-6 rounded-xl shadow bg-white border border-gray-200">
-      <h2 className="text-xl font-semibold mb-4 text-gray-700">📊 Recent Runs</h2>
+    <div className="p-6 rounded-xl backdrop-blur-lg bg-white/40 border border-white/50 shadow-lg">
+      <h2 className="text-xl font-semibold mb-4 text-gray-900">📊 Activity Log</h2>
       <div className="overflow-x-auto">
         <table className="min-w-full table-auto">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Distance (km)
+          <thead>
+            <tr className="border-b border-gray-200">
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-600">Name</th>
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-600">Type</th>
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-600">
+                Distance
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-600">Time</th>
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-600">
                 Avg Pace
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Total EG
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-600">
+                Elevation
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="divide-y divide-gray-200">
             {runs.map((run, index) => (
-              <tr key={index} className="hover:bg-gray-50 transition-colors">
+              <tr key={index} className="hover:bg-gray-50/50 transition-colors">
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{run.name}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{run.type}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm">
+                  <span className="px-2 py-1 rounded-full bg-blue-100 text-blue-800 text-xs font-medium">
+                    {run.type}
+                  </span>
+                </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {(run.distance / 1000).toFixed(1)}
+                  {(run.distance / 1000).toFixed(1)} km
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {Math.floor(run.moving_time / 3600)}h {Math.floor((run.moving_time % 3600) / 60)}m
@@ -61,7 +65,9 @@ export default function RecentRuns({ runs, isLoading }: RecentRunsProps) {
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {(1000 / run.average_speed / 60).toFixed(2)} min/km
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{run.total_elevation_gain || "-"}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {run.total_elevation_gain ? `${run.total_elevation_gain}m` : "-"}
+                </td>
               </tr>
             ))}
           </tbody>
